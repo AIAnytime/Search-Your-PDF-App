@@ -9,4 +9,4 @@ bitsandbytes
 pdfminer.six
 bs4
 sentence_transformers
-chromadb
+chromadb==0.4.4
