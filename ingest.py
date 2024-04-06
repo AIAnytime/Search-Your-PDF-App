@@ -1,28 +1,24 @@
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain.document_loaders import PyPDFLoader, DirectoryLoader, PDFMinerLoader
-from langchain.embeddings import SentenceTransformerEmbeddings
-from langchain.vectorstores import Chroma 
-import os 
-from constants import CHROMA_SETTINGS
-
-
-persist_directory = "db"
+from langchain_community.document_loaders import PyPDFLoader, DirectoryLoader, PDFMinerLoader
+from langchain_community.embeddings import SentenceTransformerEmbeddings
+from langchain_community.vectorstores import Chroma
+from chromadb.config import Settings
+import os
 
 
 def main():
-    for root, dirs, files in os.walk("docs"):
+    documents=[]
+    for root,dirs,files in os.walk("docs"):
         for file in files:
             if file.endswith(".pdf"):
                 print(file)
-                loader = PDFMinerLoader(os.path.join(root, file))
-    documents = loader.load()
-    text_splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=50)
+                loader = PDFMinerLoader(os.path.join(root,file))
+    documents.extend(loader.load())
+    text_splitter =RecursiveCharacterTextSplitter(chunk_size=500,chunk_overlap=50)
     texts = text_splitter.split_documents(documents)
     #create embeddings here
     embeddings = SentenceTransformerEmbeddings(model_name="all-MiniLM-L6-v2")
-    db = Chroma.from_documents(texts, embeddings, persist_directory=persist_directory, client_settings=CHROMA_SETTINGS)
-    db.persist()
-    db=None
-
+    db = Chroma.from_documents(
+        texts, embeddings, persist_directory="db")
 if __name__ == "__main__":
     main()
